@@ -52,5 +52,26 @@ describe('extending', () => {
         .f{ position:relative; color:red; background-color:blue; border-color: green; }
       `);
     });
+
+    it.only('should merge parents style', () => {
+      const Parent = styled.div``;
+      Parent.defaultProps = {
+        style: { color: 'blue' },
+      };
+
+      const Child = styled(Parent)``;
+      Child.defaultProps = {
+        style: { background: 'red' },
+      };
+      const parentInstance = TestRenderer.create(<Parent />).toJSON();
+      const childInstance = TestRenderer.create(<Child />).toJSON();
+      expect(parentInstance.props.style).toEqual({
+        color: 'blue',
+      });
+      expect(childInstance.props.style).toEqual({
+        color: 'blue',
+        background: 'red',
+      });
+    });
   });
 });

@@ -271,19 +271,38 @@ export default function createStyledComponent(target: Target, options: Object, r
     styledComponentId
   );
 
+  const mergeStyleProp = (style, targetStyle) => {
+    if (!style && !targetStyle) return {};
+    return {
+      style: {
+        ...(targetStyle || {}),
+        ...(style || {}),
+      },
+    };
+  };
+
   /**
    * forwardRef creates a new interim component, which we'll take advantage of
    * instead of extending ParentComponent to create _another_ interim class
    */
-  const WrappedStyledComponent = React.forwardRef((props, ref) => (
-    <ParentComponent
+  const WrappedStyledComponent = React.forwardRef((props, ref) => {
+    const {
+      style: targetStyle,
+      ...restTargetDefaultProps
       // $FlowFixMe
-      {...WrappedStyledComponent.targetDefaultProps}
-      {...props}
-      forwardedComponent={WrappedStyledComponent}
-      forwardedRef={ref}
-    />
-  ));
+    } = WrappedStyledComponent.targetDefaultProps;
+    const { style, ...restProps } = props;
+    const mergedStyle = mergeStyleProp(style, targetStyle);
+    return (
+      <ParentComponent
+        {...restTargetDefaultProps}
+        {...restProps}
+        {...mergedStyle}
+        forwardedComponent={WrappedStyledComponent}
+        forwardedRef={ref}
+      />
+    );
+  });
 
   // $FlowFixMe
   WrappedStyledComponent.attrs = finalAttrs;
@@ -305,11 +324,14 @@ export default function createStyledComponent(target: Target, options: Object, r
   WrappedStyledComponent.target = isTargetStyledComp ? target.target : target;
 
   // $FlowFixMe
+  const targetDefaultProps = target.targetDefaultProps || {};
+  // $FlowFixMe
+  const defaultProps = target.defaultProps || {};
+  // $FlowFixMe
   WrappedStyledComponent.targetDefaultProps = {
-    // $FlowFixMe
-    ...(target.targetDefaultProps || {}),
-    // $FlowFixMe
-    ...(target.defaultProps || {}),
+    ...targetDefaultProps,
+    ...defaultProps,
+    ...mergeStyleProp(defaultProps.style, targetDefaultProps.style),
   };
 
   // $FlowFixMe
