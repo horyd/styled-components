@@ -53,7 +53,7 @@ describe('extending', () => {
       `);
     });
 
-    it.only('should merge parents style', () => {
+    it('should merge parents style', () => {
       const Parent = styled.div``;
       Parent.defaultProps = {
         style: { color: 'blue' },
