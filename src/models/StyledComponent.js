@@ -276,7 +276,13 @@ export default function createStyledComponent(target: Target, options: Object, r
    * instead of extending ParentComponent to create _another_ interim class
    */
   const WrappedStyledComponent = React.forwardRef((props, ref) => (
-    <ParentComponent {...props} forwardedComponent={WrappedStyledComponent} forwardedRef={ref} />
+    <ParentComponent
+      // $FlowFixMe
+      {...WrappedStyledComponent.targetDefaultProps}
+      {...props}
+      forwardedComponent={WrappedStyledComponent}
+      forwardedRef={ref}
+    />
   ));
 
   // $FlowFixMe
@@ -297,6 +303,14 @@ export default function createStyledComponent(target: Target, options: Object, r
   // fold the underlying StyledComponent target up since we folded the styles
   // $FlowFixMe
   WrappedStyledComponent.target = isTargetStyledComp ? target.target : target;
+
+  // $FlowFixMe
+  WrappedStyledComponent.targetDefaultProps = {
+    // $FlowFixMe
+    ...(target.targetDefaultProps || {}),
+    // $FlowFixMe
+    ...(target.defaultProps || {}),
+  };
 
   // $FlowFixMe
   WrappedStyledComponent.withComponent = function withComponent(tag: Target) {
@@ -328,6 +342,7 @@ export default function createStyledComponent(target: Target, options: Object, r
     hoist(WrappedStyledComponent, target, {
       // all SC-specific things should not be hoisted
       attrs: true,
+      targetDefaultProps: true,
       componentStyle: true,
       displayName: true,
       foldedComponentIds: true,
