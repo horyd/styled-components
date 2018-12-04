@@ -261,6 +261,9 @@ export default function createStyledComponent(target: Target, options: Object, r
       ? Array.prototype.concat(target.attrs, attrs).filter(Boolean)
       : attrs;
 
+  const mergeProp = (key, targetProp, prop) =>
+    !targetProp && !prop ? {} : { [key]: { ...(targetProp || {}), ...(prop || {}) } };
+
   const componentStyle = new ComponentStyle(
     isTargetStyledComp
       ? // fold the underlying StyledComponent rules up (implicit extend)
@@ -271,33 +274,22 @@ export default function createStyledComponent(target: Target, options: Object, r
     styledComponentId
   );
 
-  const mergeStyleProp = (style, targetStyle) => {
-    if (!style && !targetStyle) return {};
-    return {
-      style: {
-        ...(targetStyle || {}),
-        ...(style || {}),
-      },
-    };
-  };
-
   /**
    * forwardRef creates a new interim component, which we'll take advantage of
    * instead of extending ParentComponent to create _another_ interim class
    */
   const WrappedStyledComponent = React.forwardRef((props, ref) => {
     const {
-      style: targetStyle,
+      style: targetStyleProp,
       ...restTargetDefaultProps
       // $FlowFixMe
     } = WrappedStyledComponent.targetDefaultProps;
-    const { style, ...restProps } = props;
-    const mergedStyle = mergeStyleProp(style, targetStyle);
+    const { style: styleProp, ...restProps } = props;
     return (
       <ParentComponent
         {...restTargetDefaultProps}
         {...restProps}
-        {...mergedStyle}
+        {...mergeProp('style', targetStyleProp, styleProp)}
         forwardedComponent={WrappedStyledComponent}
         forwardedRef={ref}
       />
@@ -323,15 +315,18 @@ export default function createStyledComponent(target: Target, options: Object, r
   // $FlowFixMe
   WrappedStyledComponent.target = isTargetStyledComp ? target.target : target;
 
+  const {
+    style: targetStyleDefaultProp,
+    ...restTargetDefaultProps
+    // $FlowFixMe
+  } = target.targetDefaultProps || {};
   // $FlowFixMe
-  const targetDefaultProps = target.targetDefaultProps || {};
-  // $FlowFixMe
-  const defaultProps = target.defaultProps || {};
+  const { style: styleDefaultProp, ...restDefaultProps } = target.defaultProps || {};
   // $FlowFixMe
   WrappedStyledComponent.targetDefaultProps = {
-    ...targetDefaultProps,
-    ...defaultProps,
-    ...mergeStyleProp(defaultProps.style, targetDefaultProps.style),
+    ...restTargetDefaultProps,
+    ...restDefaultProps,
+    ...mergeProp('style', targetStyleDefaultProp, styleDefaultProp),
   };
 
   // $FlowFixMe
