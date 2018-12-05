@@ -278,23 +278,17 @@ export default function createStyledComponent(target: Target, options: Object, r
    * forwardRef creates a new interim component, which we'll take advantage of
    * instead of extending ParentComponent to create _another_ interim class
    */
-  const WrappedStyledComponent = React.forwardRef((props, ref) => {
-    const {
-      style: targetStyleProp,
-      ...restTargetDefaultProps
+  const WrappedStyledComponent = React.forwardRef((props = EMPTY_OBJECT, ref) => (
+    <ParentComponent
       // $FlowFixMe
-    } = WrappedStyledComponent.targetDefaultProps;
-    const { style: styleProp, ...restProps } = props;
-    return (
-      <ParentComponent
-        {...restTargetDefaultProps}
-        {...restProps}
-        {...mergeProp('style', targetStyleProp, styleProp)}
-        forwardedComponent={WrappedStyledComponent}
-        forwardedRef={ref}
-      />
-    );
-  });
+      {...WrappedStyledComponent.targetDefaultProps}
+      {...props}
+      // $FlowFixMe
+      {...mergeProp('style', WrappedStyledComponent.targetDefaultProps.style, props.style)}
+      forwardedComponent={WrappedStyledComponent}
+      forwardedRef={ref}
+    />
+  ));
 
   // $FlowFixMe
   WrappedStyledComponent.attrs = finalAttrs;
@@ -315,18 +309,16 @@ export default function createStyledComponent(target: Target, options: Object, r
   // $FlowFixMe
   WrappedStyledComponent.target = isTargetStyledComp ? target.target : target;
 
-  const {
-    style: targetStyleDefaultProp,
-    ...restTargetDefaultProps
-    // $FlowFixMe
-  } = target.targetDefaultProps || {};
   // $FlowFixMe
-  const { style: styleDefaultProp, ...restDefaultProps } = target.defaultProps || {};
+  const targetDefaultProps = target.targetDefaultProps || EMPTY_OBJECT;
+  // $FlowFixMe
+  const defaultProps = target.defaultProps || EMPTY_OBJECT;
   // $FlowFixMe
   WrappedStyledComponent.targetDefaultProps = {
-    ...restTargetDefaultProps,
-    ...restDefaultProps,
-    ...mergeProp('style', targetStyleDefaultProp, styleDefaultProp),
+    ...targetDefaultProps,
+    ...defaultProps,
+    // $FlowFixMe
+    ...mergeProp('style', targetDefaultProps.style, defaultProps.style),
   };
 
   // $FlowFixMe
