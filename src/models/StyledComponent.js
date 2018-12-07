@@ -278,17 +278,29 @@ export default function createStyledComponent(target: Target, options: Object, r
    * forwardRef creates a new interim component, which we'll take advantage of
    * instead of extending ParentComponent to create _another_ interim class
    */
-  const WrappedStyledComponent = React.forwardRef((props = EMPTY_OBJECT, ref) => (
-    <ParentComponent
+  const WrappedStyledComponent = React.forwardRef((props = EMPTY_OBJECT, ref) => {
+    // $FlowFixMe
+    const defaultProps = WrappedStyledComponent.defaultProps || EMPTY_OBJECT;
+    // $FlowFixMe
+    WrappedStyledComponent.defaultProps = {
       // $FlowFixMe
-      {...WrappedStyledComponent.targetDefaultProps}
-      {...props}
+      ...WrappedStyledComponent.targetDefaultProps,
+      ...defaultProps,
       // $FlowFixMe
-      {...mergeProp('style', WrappedStyledComponent.targetDefaultProps.style, props.style)}
-      forwardedComponent={WrappedStyledComponent}
-      forwardedRef={ref}
-    />
-  ));
+      ...mergeProp('style', WrappedStyledComponent.targetDefaultProps.style, defaultProps.style),
+    };
+    return (
+      <ParentComponent
+        // $FlowFixMe
+        {...WrappedStyledComponent.defaultProps}
+        {...props}
+        // $FlowFixMe
+        {...mergeProp('style', WrappedStyledComponent.defaultProps.style, props.style)}
+        forwardedComponent={WrappedStyledComponent}
+        forwardedRef={ref}
+      />
+    );
+  });
 
   // $FlowFixMe
   WrappedStyledComponent.attrs = finalAttrs;

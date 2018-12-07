@@ -56,12 +56,20 @@ describe('theming', () => {
         },
       },
     };
+
+    const Comp2 = styled(Comp1)``;
+    Comp2.defaultProps = {};
+
     TestRenderer.create(
       <div>
         <Comp1 />
+        <Comp2 />
       </div>
     );
-    expectCSSMatches(`.b { color:purple; }`);
+    expectCSSMatches(`
+      .c { color:purple; }
+      .d { color:purple; }
+    `);
   });
 
   // https://github.com/styled-components/styled-components/issues/344
@@ -446,8 +454,8 @@ describe('theming', () => {
 
     jest
       .spyOn(console, 'warn')
-      .mockImplementation(
-        msg => (!msg.includes('You are not using a ThemeProvider') ? consoleWarn(msg) : null)
+      .mockImplementation(msg =>
+        !msg.includes('You are not using a ThemeProvider') ? consoleWarn(msg) : null
       );
 
     MyDivWithTheme.defaultProps = { theme };

@@ -53,7 +53,7 @@ describe('extending', () => {
       `);
     });
 
-    it('should merge parents style', () => {
+    it('should extends parents default style', () => {
       const Parent = styled.div``;
       Parent.defaultProps = {
         style: { color: 'blue' },
@@ -63,14 +63,40 @@ describe('extending', () => {
       Child.defaultProps = {
         style: { background: 'red' },
       };
-      const parentInstance = TestRenderer.create(<Parent />).toJSON();
-      const childInstance = TestRenderer.create(<Child />).toJSON();
-      expect(parentInstance.props.style).toEqual({
+
+      expect(TestRenderer.create(<Parent />).toJSON().props.style).toEqual({
         color: 'blue',
       });
-      expect(childInstance.props.style).toEqual({
+      expect(TestRenderer.create(<Child />).toJSON().props.style).toEqual({
         color: 'blue',
         background: 'red',
+      });
+      expect(
+        TestRenderer.create(<Child style={{ color: 'red', border: 'none' }} />).toJSON().props.style
+      ).toEqual({
+        color: 'red',
+        background: 'red',
+        border: 'none',
+      });
+    });
+
+    it('should extends default styles with styles', () => {
+      const Parent = styled.div``;
+      Parent.defaultProps = {
+        style: { color: 'blue' },
+      };
+
+      const Child = styled(Parent)``;
+      Child.defaultProps = {
+        style: { background: 'red' },
+      };
+
+      expect(
+        TestRenderer.create(<Child style={{ border: 'none' }} />).toJSON().props.style
+      ).toEqual({
+        color: 'blue',
+        background: 'red',
+        border: 'none',
       });
     });
   });
