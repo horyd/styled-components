@@ -6,7 +6,7 @@ import TestRenderer from 'react-test-renderer';
 
 let styled;
 
-describe('extending', () => {
+describe('defaultProps', () => {
   /**
    * Make sure the setup is the same for every test
    */
@@ -71,13 +71,6 @@ describe('extending', () => {
         color: 'blue',
         background: 'red',
       });
-      expect(
-        TestRenderer.create(<Child style={{ color: 'red', border: 'none' }} />).toJSON().props.style
-      ).toEqual({
-        color: 'red',
-        background: 'red',
-        border: 'none',
-      });
     });
 
     it('should extends default styles with styles', () => {
@@ -92,10 +85,14 @@ describe('extending', () => {
       };
 
       expect(
+        TestRenderer.create(<Child style={{ background: 'red' }} />).toJSON().props.style
+      ).toEqual({
+        background: 'red',
+      });
+
+      expect(
         TestRenderer.create(<Child style={{ border: 'none' }} />).toJSON().props.style
       ).toEqual({
-        color: 'blue',
-        background: 'red',
         border: 'none',
       });
     });

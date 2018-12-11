@@ -261,9 +261,6 @@ export default function createStyledComponent(target: Target, options: Object, r
       ? Array.prototype.concat(target.attrs, attrs).filter(Boolean)
       : attrs;
 
-  const mergeProp = (key, targetProp, prop) =>
-    !targetProp && !prop ? {} : { [key]: { ...(targetProp || {}), ...(prop || {}) } };
-
   const componentStyle = new ComponentStyle(
     isTargetStyledComp
       ? // fold the underlying StyledComponent rules up (implicit extend)
@@ -278,29 +275,9 @@ export default function createStyledComponent(target: Target, options: Object, r
    * forwardRef creates a new interim component, which we'll take advantage of
    * instead of extending ParentComponent to create _another_ interim class
    */
-  const WrappedStyledComponent = React.forwardRef((props = EMPTY_OBJECT, ref) => {
-    // $FlowFixMe
-    const defaultProps = WrappedStyledComponent.defaultProps || EMPTY_OBJECT;
-    // $FlowFixMe
-    WrappedStyledComponent.defaultProps = {
-      // $FlowFixMe
-      ...WrappedStyledComponent.targetDefaultProps,
-      ...defaultProps,
-      // $FlowFixMe
-      ...mergeProp('style', WrappedStyledComponent.targetDefaultProps.style, defaultProps.style),
-    };
-    return (
-      <ParentComponent
-        // $FlowFixMe
-        {...WrappedStyledComponent.defaultProps}
-        {...props}
-        // $FlowFixMe
-        {...mergeProp('style', WrappedStyledComponent.defaultProps.style, props.style)}
-        forwardedComponent={WrappedStyledComponent}
-        forwardedRef={ref}
-      />
-    );
-  });
+  const WrappedStyledComponent = React.forwardRef((props, ref) => (
+    <ParentComponent {...props} forwardedComponent={WrappedStyledComponent} forwardedRef={ref} />
+  ));
 
   // $FlowFixMe
   WrappedStyledComponent.attrs = finalAttrs;
@@ -321,17 +298,30 @@ export default function createStyledComponent(target: Target, options: Object, r
   // $FlowFixMe
   WrappedStyledComponent.target = isTargetStyledComp ? target.target : target;
 
+  // fold defaultProps
   // $FlowFixMe
-  const targetDefaultProps = target.targetDefaultProps || EMPTY_OBJECT;
+  if (!WrappedStyledComponent._defaultProps) WrappedStyledComponent._defaultProps = EMPTY_OBJECT;
   // $FlowFixMe
-  const defaultProps = target.defaultProps || EMPTY_OBJECT;
-  // $FlowFixMe
-  WrappedStyledComponent.targetDefaultProps = {
-    ...targetDefaultProps,
-    ...defaultProps,
-    // $FlowFixMe
-    ...mergeProp('style', targetDefaultProps.style, defaultProps.style),
-  };
+  Object.defineProperty(WrappedStyledComponent, 'defaultProps', {
+    enumerable: true,
+    get() {
+      return this._defaultProps;
+    },
+    set(defaultProps) {
+      this._defaultProps = {
+        ...this._defaultProps,
+        ...defaultProps,
+        ...(this._defaultProps.style || defaultProps.style
+          ? {
+              style: {
+                ...(this._defaultProps.style || EMPTY_OBJECT),
+                ...(defaultProps.style || EMPTY_OBJECT),
+              },
+            }
+          : EMPTY_OBJECT),
+      };
+    },
+  });
 
   // $FlowFixMe
   WrappedStyledComponent.withComponent = function withComponent(tag: Target) {
@@ -363,7 +353,6 @@ export default function createStyledComponent(target: Target, options: Object, r
     hoist(WrappedStyledComponent, target, {
       // all SC-specific things should not be hoisted
       attrs: true,
-      targetDefaultProps: true,
       componentStyle: true,
       displayName: true,
       foldedComponentIds: true,
