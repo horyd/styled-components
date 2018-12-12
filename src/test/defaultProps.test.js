@@ -73,7 +73,7 @@ describe('defaultProps', () => {
       });
     });
 
-    it('should extends default styles with styles', () => {
+    it('should override default styles with styles', () => {
       const Parent = styled.div``;
       Parent.defaultProps = {
         style: { color: 'blue' },
@@ -83,12 +83,6 @@ describe('defaultProps', () => {
       Child.defaultProps = {
         style: { background: 'red' },
       };
-
-      expect(
-        TestRenderer.create(<Child style={{ background: 'red' }} />).toJSON().props.style
-      ).toEqual({
-        background: 'red',
-      });
 
       expect(
         TestRenderer.create(<Child style={{ border: 'none' }} />).toJSON().props.style

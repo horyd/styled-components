@@ -300,7 +300,7 @@ export default function createStyledComponent(target: Target, options: Object, r
 
   // fold defaultProps
   // $FlowFixMe
-  if (!WrappedStyledComponent._defaultProps) WrappedStyledComponent._defaultProps = EMPTY_OBJECT;
+  WrappedStyledComponent._defaultProps = EMPTY_OBJECT;
   // $FlowFixMe
   Object.defineProperty(WrappedStyledComponent, 'defaultProps', {
     enumerable: true,
