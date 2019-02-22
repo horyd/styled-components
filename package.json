@@ -170,10 +170,5 @@
   "collective": {
     "type": "opencollective",
     "url": "https://opencollective.com/styled-components"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "flow check && lint-staged"
-    }
   }
 }
